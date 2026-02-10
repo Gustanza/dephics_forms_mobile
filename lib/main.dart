@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:survey_app/views/all_forms.dart';
 import 'package:survey_app/views/survey_input.dart';
 
 void main() {
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF5F3F7),
         useMaterial3: true,
       ),
-      home: const OutletInteractionReportScreen(),
+      home: AllForms(),
     );
   }
 }
