@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -463,14 +463,18 @@ class _OutletInteractionReportScreenState
               FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
               if (result != null) {
                 List<File> files = result.paths.map((path) => File(path!)).toList();
-                var pazs = result.paths;
-                uploadFiles(result.paths);
+                
+                // Upload files and get URLs
+                List<String>? uploadedUrls = await uploadFiles(result.paths);
+                
+                setState(() {
+                  if (uploadedUrls != null && uploadedUrls.isNotEmpty) {
+                    _outletPicture = uploadedUrls.first; // First URL for outlet picture
+                  }
+                });
               } else {
                 // User canceled the picker
               }
-              setState(() {
-                _outletPicture = 'storefront.jpg';
-              });
             },
           ),
           const SizedBox(height: 16),
@@ -478,10 +482,22 @@ class _OutletInteractionReportScreenState
             label: 'Outlet picture after branding',
             description: 'Capture branded materials on site.',
             fileName: _brandedPicture,
-            onPressed: () {
-              setState(() {
-                _brandedPicture = 'branded.jpg';
-              });
+            onPressed: () async{
+              FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
+              if (result != null) {
+                List<File> files = result.paths.map((path) => File(path!)).toList();
+                
+                // Upload files and get URLs
+                List<String>? uploadedUrls = await uploadFiles(result.paths);
+                
+                setState(() {
+                  if (uploadedUrls != null && uploadedUrls.isNotEmpty) {
+                    _brandedPicture = uploadedUrls.first; // First URL for branded picture
+                  }
+                });
+              } else {
+                // User canceled the picker
+              }
             },
           ),
         ],
@@ -489,7 +505,7 @@ class _OutletInteractionReportScreenState
     );
   }
 
-   Future<void> uploadFiles(List<String?> paths) async {
+   Future<List<String>?> uploadFiles(List<String?> paths) async {
   var uri = Uri.parse("https://cornerstone.core.tz/promo/upload-files");
   var request = http.MultipartRequest("POST", uri);
 
@@ -505,10 +521,22 @@ class _OutletInteractionReportScreenState
   var response = await request.send();
 
   if (response.statusCode == 200) {
-    debugPrint("Uploaded!: ${response.contentLength}");
-    print("Uploaded!");
+    var responseBody = await response.stream.bytesToString();
+    var responseData = jsonDecode(responseBody);
+    debugPrint("Responsedata: $responseData");
+    // Extract file URLs from response
+    List<String> fileUrls = [];
+    if (responseData['files'] != null) {
+      var files = responseData['files'] as List;
+      for (var file in files) {
+        fileUrls.add(file.toString());
+      }
+    }
+    
+    return fileUrls;
   } else {
     print("Failed with status: ${response.statusCode}");
+    return null;
   }
 }
               
