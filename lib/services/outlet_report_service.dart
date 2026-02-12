@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:survey_app/models/outlet_report_payload.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:survey_app/utils/yekonga/ye_gvars.dart';
 
 /// Service that submits the outlet report.
 /// Currently simulates a delay; plug the real HTTP request below.
@@ -43,7 +45,7 @@ class OutletReportService {
   }
 }
 
-const sharedHeaders = {
+var sharedHeaders = {
   'Accept': 'application/json',
   'Content-Type': 'application/json',
 };
@@ -51,7 +53,8 @@ const sharedHeaders = {
 const respGood = "isGood";
 const respBody = 'body';
 const respError = "error";
-const prodGenrl = "https://cornerstone.core.tz/promo/form-data";
+const prodPulGenrl = "https://cornerstone.core.tz/promo/graphql";
+const prodPosGenrl = "https://cornerstone.core.tz/promo/form-data";
 // const debugGenrl = "http://192.168.100.16:1235/graphql";
 const prodAuthrl = "https://cornerstone.core.tz/auth/graphql/auth";
 // const debugAuthrl = "http://192.168.100.16:1235/graphql/auth";
@@ -77,9 +80,52 @@ class YeAuth {
   }
 }
 
-class YeGen {
-  var yegenrl = Uri.parse(prodGenrl);
-  Future shoot({variables, query}) async {
+class YeGenV1 {
+  var yegenrl = Uri.parse(prodPulGenrl);
+  var genAuthRl = Uri.parse(prodAuthrl);
+  shooterAuth({variables, query}) async {
+    try {
+      var response = await http.post(
+        genAuthRl,
+        headers: sharedHeaders,
+        body: jsonEncode({'query': query, 'variables': variables}),
+      );
+      var body = jsonDecode(response.body);
+      debugPrint("Look at body: $body $query");
+      return {respGood: true, respBody: body};
+    } catch (e) {
+      return {
+        respGood: false,
+        respBody: {respError: "$e"},
+      };
+    }
+  }
+
+  shooter({variables, query}) async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      var uAccessToken = prefs.getString(ygAccesstoken);
+      var response = await http.post(
+        yegenrl,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': "Bearer $uAccessToken",
+        },
+        body: jsonEncode({'query': query, 'variables': variables}),
+      );
+      debugPrint("Access: $uAccessToken");
+      var body = jsonDecode(response.body);
+      return {respGood: true, respBody: body};
+    } catch (e) {
+      return {
+        respGood: false,
+        respBody: {respError: "$e"},
+      };
+    }
+  }
+
+  Future spShoot({variables, query}) async {
     try {
       var response = await http.post(
         yegenrl,
@@ -87,12 +133,9 @@ class YeGen {
         body: jsonEncode(variables),
         // body: jsonEncode({'query': query, 'variables': variables}),
       );
-      debugPrint("Response 00: $response");
       var body = jsonDecode(response.body);
-      debugPrint("Response 01: $body");
       return {respGood: true, respBody: body};
     } catch (e) {
-      debugPrint("Response 02: $e");
       return {
         respGood: false,
         respBody: {respError: "$e"},
@@ -101,55 +144,76 @@ class YeGen {
   }
 }
 
-// class ResService {
-//   static Future downRes({String? fileUrl, Function(String)? fdbck}) async {
-//     try {
-//       // Get user selected directory
-//       String? selDir = await FilePicker.platform.getDirectoryPath();
-//       if (selDir == null) {
-//         return;
-//       }
-//       // Create a reference to the file in Firebase Storage
-//       final videoref = FirebaseStorage.instance.refFromURL(fileUrl!);
-//       // Get the total size of the file
-//       final metadata = await videoref.getMetadata();
-//       final totalBytes = metadata.size ?? 0;
-//       String? contentType = metadata.contentType;
-//       String rndNum = (Random().nextInt(9000) + 1000).toString();
-//       String cleanType = contentType!.split('/').last;
-//       final filePath = '$selDir/$rndNum.$cleanType';
-//       final videofile = File(filePath);
-//       // Start the download
-//       showToast(isGood: true, message: "Initiating Download Sequence");
-//       // await thumbnailref.writeToFile(thumbnailfile);
-//       final downloadTask = videoref.writeToFile(videofile);
+class YeGenV2 {
+  var yegenrl = Uri.parse(prodPosGenrl);
+  var genAuthRl = Uri.parse(prodAuthrl);
+  shooterAuth({variables, query}) async {
+    try {
+      var response = await http.post(
+        genAuthRl,
+        headers: sharedHeaders,
+        body: jsonEncode({'query': query, 'variables': variables}),
+      );
+      var body = jsonDecode(response.body);
+      debugPrint("Look at body: $body $query");
+      return {respGood: true, respBody: body};
+    } catch (e) {
+      return {
+        respGood: false,
+        respBody: {respError: "$e"},
+      };
+    }
+  }
 
-//       // Listen to the download progress
-//       downloadTask.snapshotEvents.listen((taskSnapshot) async {
-//         switch (taskSnapshot.state) {
-//           case TaskState.running:
-//             final progress = taskSnapshot.bytesTransferred / totalBytes;
-//             String percent = "${(progress * 100).truncate()} %";
-//             fdbck!(percent);
-//             break;
-//           case TaskState.success:
-//             fdbck!("Success");
-//             break;
-//           case TaskState.error:
-//             fdbck!("Retry");
-//             break;
-//           default:
-//             //
-//             break;
-//         }
-//       });
+  shooter({variables, query}) async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      var uAccessToken = prefs.getString(ygAccesstoken);
+      var response = await http.post(
+        yegenrl,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': "Bearer $uAccessToken",
+        },
+        body: jsonEncode({'query': query, 'variables': variables}),
+      );
+      debugPrint("Look at kweru us: $query $variables");
+      var body = jsonDecode(response.body);
+      return {respGood: true, respBody: body};
+    } catch (e) {
+      debugPrint("Look at kweru us: $query $variables");
+      return {
+        respGood: false,
+        respBody: {respError: "$e"},
+      };
+    }
+  }
 
-//       // Wait for the download to complete
-//       await downloadTask;
-//       return;
-//     } catch (e) {
-//       showToast(isGood: false, message: "$e");
-//       return;
-//     }
-//   }
-// }
+  Future spShoot({variables, query}) async {
+    try {
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      var uAccessToken = prefs.getString(ygAccesstoken);
+      var response = await http.post(
+        yegenrl,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': "Bearer $uAccessToken",
+        },
+        body: jsonEncode(variables),
+        // body: jsonEncode({'query': query, 'variables': variables}),
+      );
+
+      var body = jsonDecode(response.body);
+      debugPrint("Kookay: $variables");
+      return {respGood: true, respBody: body};
+    } catch (e) {
+      debugPrint("Kooked: $variables");
+      return {
+        respGood: false,
+        respBody: {respError: "$e"},
+      };
+    }
+  }
+}

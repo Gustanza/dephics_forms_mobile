@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:survey_app/resources/colors.dart';
+import 'package:survey_app/services/outlet_report_service.dart';
+import 'package:survey_app/utils/globalfns.dart';
+import 'package:survey_app/utils/queries.dart';
+import 'package:survey_app/utils/yekonga/ye_gvars.dart';
 import 'package:survey_app/views/all_submitted_data.dart';
 import 'package:survey_app/views/survey_input.dart';
 
@@ -8,9 +13,39 @@ class InForm extends StatefulWidget {
 
   @override
   State<InForm> createState() => _InFormState();
-} 
+}
 
 class _InFormState extends State<InForm> {
+  var fvisitsCount = 0;
+
+  @override
+  void initState() {
+    getData();
+    super.initState();
+  }
+
+  void safeState(Function() runnable) {
+    if (mounted) {
+      setState(() {
+        runnable();
+      });
+    }
+  }
+
+  void getData() async {
+    try {
+      var res = await YeGenV1().shooter(query: fvisitsQ);
+      if (res[respGood]) {
+        fvisitsCount = res[respBody][ygdata][ygchild_data][ygcount];
+        safeState(() {});
+      } else {
+        debugPrint("Could not get datar");
+      }
+    } catch (e) {
+      debugPrint("Encountered an problemo: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,7 +53,7 @@ class _InFormState extends State<InForm> {
       appBar: AppBar(
         backgroundColor: AppColors.knaufBlue,
         elevation: 0,
-       foregroundColor: Colors.white,
+        foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.add, color: AppColors.textOnPrimary),
@@ -68,29 +103,31 @@ class _InFormState extends State<InForm> {
             _buildActionButton(
               icon: Icons.add_circle_outline,
               label: '+Add New Data',
-              onTap: () {
-                Navigator.of(context).push(
+              onTap: () async {
+                await Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => const OutletInteractionReportScreen(),
                   ),
                 );
+                getData();
               },
             ),
-            const SizedBox(height: 12),
-            _buildActionButton(
-              icon: Icons.visibility_outlined,
-              label: 'View Submitted Data',
-              onTap: () {
-                 Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const AllSubmittedData(),
-                  ),
-                );
-              },
-            ),
-            
+
+            // const SizedBox(height: 12),
+            // _buildActionButton(
+            //   icon: Icons.visibility_outlined,
+            //   label: 'View Submitted Data',
+            //   onTap: () {
+            //     showToast(isGood: true, message: "Coming soon");
+            //     // Navigator.of(context).push(
+            //     //   MaterialPageRoute(
+            //     //     builder: (context) => const AllSubmittedData(),
+            //     //   ),
+            //     // );
+            //   },
+            // ),
             const SizedBox(height: 24),
-            
+
             // Status Section
             Container(
               width: double.infinity,
@@ -117,14 +154,14 @@ class _InFormState extends State<InForm> {
                       color: Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  
+                  const SizedBox(height: 8),
+
                   // Pending Submissions
                   Row(
                     children: [
                       Expanded(
                         child: Text(
-                          '12 Submission pending',
+                          '0 Submission pending',
                           style: TextStyle(
                             fontSize: 14,
                             color: AppColors.textSecondary,
@@ -132,7 +169,7 @@ class _InFormState extends State<InForm> {
                         ),
                       ),
                       ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: null,
                         icon: const Icon(Icons.upload, size: 16),
                         label: const Text('Upload'),
                         style: ElevatedButton.styleFrom(
@@ -149,9 +186,7 @@ class _InFormState extends State<InForm> {
                       ),
                     ],
                   ),
-                  
                   const SizedBox(height: 12),
-                  
                   // Successful Submissions
                   Row(
                     children: [
@@ -161,8 +196,8 @@ class _InFormState extends State<InForm> {
                         size: 16,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
-                        '23 inputs successfully submitted',
+                      Text(
+                        '$fvisitsCount inputs successfully submitted',
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.success,
@@ -205,10 +240,7 @@ class _InFormState extends State<InForm> {
             const SizedBox(width: 12),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
           ],
         ),

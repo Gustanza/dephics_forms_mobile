@@ -182,7 +182,10 @@ class _OutletInteractionReportScreenState
                   const SizedBox(height: 8),
                   Text(
                     'Document every visit with photos, availability insights, and customer feedback in one modern interface.',
-                    style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -697,6 +700,12 @@ class _OutletInteractionReportScreenState
         TextFormField(
           controller: controller,
           maxLines: maxLines,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'This field is required';
+            }
+            return null;
+          },
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: TextStyle(color: AppColors.textSecondary),
@@ -784,6 +793,12 @@ class _OutletInteractionReportScreenState
               child: TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Phone number is required';
+                  }
+                  return null;
+                },
                 decoration: InputDecoration(
                   hintText: '712 345 678',
                   hintStyle: TextStyle(color: AppColors.textSecondary),
@@ -839,6 +854,12 @@ class _OutletInteractionReportScreenState
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: value,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please select an option';
+            }
+            return null;
+          },
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.inputBackground,
@@ -1392,7 +1413,8 @@ class _OutletInteractionReportScreenState
       // await _reportService.submitReport(_buildPayload());
       var payload = _buildPayload();
       final variables = payload.toMap();
-      await YeGen().shoot(query: "", variables: variables);
+      var respo = await YeGenV2().spShoot(query: "", variables: variables);
+      debugPrint("Responsee: $respo");
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(

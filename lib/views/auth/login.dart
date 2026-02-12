@@ -63,10 +63,10 @@ class _LoginState extends State<Login> {
           showToast(isGood: status, message: "$msg");
         }
       } else {
-        showToast(isGood: false, message: "Oops! Imeshindikana");
+        showToast(isGood: false, message: "Oops! Failed");
       }
     } catch (e) {
-      showToast(isGood: false, message: "$e");
+      showToast(isGood: false, message: "Oops! Failed");
     }
     safeState(() {
       _isLoading = false;
@@ -321,12 +321,12 @@ class _LOTPState extends State<LOTP> {
                   var login = res[respBody][ygdata][yglogin];
 
                   if (login != null) {
-                    var utoken = login[ygtoken];
+                    var uAccessToken = login[ygAccesstoken];
+                    var uRefreshToken = login[ygRefreshtoken];
                     popper();
-                    await prefs.setString('token', utoken);
-                    final String? action = prefs.getString('token');
-                    debugPrint("Token is: $action");
-                    // moover();
+                    await prefs.setString(ygAccesstoken, uAccessToken);
+                    await prefs.setString(ygRefreshtoken, uRefreshToken);
+                    moover();
                   } else {
                     var err = res[respBody][ygerrors][0][ygmsg];
                     showToast(isGood: false, message: "$err");
@@ -337,7 +337,7 @@ class _LOTPState extends State<LOTP> {
                   popper();
                 }
               } catch (e) {
-                showToast(isGood: false, message: "$e");
+                showToast(isGood: false, message: "Failed");
                 popper();
               }
             },
