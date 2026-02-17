@@ -188,11 +188,9 @@ class YeGenV2 {
         },
         body: jsonEncode({'query': query, 'variables': variables}),
       );
-      debugPrint("Look at kweru us: $query $variables");
       var body = jsonDecode(response.body);
       return {respGood: true, respBody: body};
     } catch (e) {
-      debugPrint("Look at kweru us: $query $variables");
       return {
         respGood: false,
         respBody: {respError: "$e"},
@@ -214,12 +212,9 @@ class YeGenV2 {
         body: jsonEncode(variables),
         // body: jsonEncode({'query': query, 'variables': variables}),
       );
-
       var body = jsonDecode(response.body);
-      debugPrint("Kookay: $variables");
       return {respGood: true, respBody: body};
     } catch (e) {
-      debugPrint("Kooked: $variables");
       return {
         respGood: false,
         respBody: {respError: "$e"},

@@ -151,6 +151,51 @@ class _OutletInteractionReportScreenState
     super.dispose();
   }
 
+  // Method to reset all form fields to their default state
+  void _resetForm() {
+    setState(() {
+      // Clear text controllers
+      _outletNameController.clear();
+      _phoneController.clear();
+      _districtController.clear();
+      _streetController.clear();
+      _gpsController.text = '-6.7924, 39.2083';
+      _challengesController.clear();
+      _topCompetitorController.clear();
+      _additionalNotesController.clear();
+      
+      // Clear product quantity controllers
+      for (var controller in _productQuantities.values) {
+        controller.clear();
+      }
+      
+      // Reset dropdown values
+      _selectedCategory = null;
+      _selectedRegion = null;
+      _selectedCountryCode = '+255';
+      _selectedOrderStatus = null;
+      
+      // Reset radio button values
+      _customerAware = null;
+      _outletHasProducts = null;
+      _orderPlaced = null;
+      
+      // Reset checkbox maps
+      _availableProducts.updateAll((key, value) => false);
+      _orderedProducts.updateAll((key, value) => false);
+      _competitorProducts.updateAll((key, value) => false);
+      _customerFeedbackOptions.updateAll((key, value) => false);
+      _brandingMaterials.updateAll((key, value) => false);
+      
+      // Reset file uploads
+      _outletPicture = 'No file chosen';
+      _brandedPicture = 'No file chosen';
+      
+      // Reset UI state
+      _isGettingLocation = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1597,7 +1642,7 @@ class _OutletInteractionReportScreenState
       // debugPrint("Responsee: $respo");
       if (!mounted) return;
       Navigator.of(context).pop();
-      showReportSentDialog(context);
+      showReportSentDialog(context, _resetForm);
     } catch (e) {
       if (!mounted) return;
       Navigator.of(context).pop();
@@ -1632,7 +1677,7 @@ class _OutletInteractionReportScreenState
   }
 }
 
-void showReportSentDialog(BuildContext context) {
+void showReportSentDialog(BuildContext context, VoidCallback resetForm) {
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -1694,7 +1739,7 @@ void showReportSentDialog(BuildContext context) {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    // Add your logic to add another report
+                    resetForm();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.knaufBlue,
