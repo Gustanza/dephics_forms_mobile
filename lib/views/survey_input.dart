@@ -638,13 +638,15 @@ class _OutletInteractionReportScreenState
             },
           ),
           const SizedBox(height: 24),
-          const Text(
-            'Knauf products available / Bidhaa zilizopo',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 12),
-          _buildProductCheckboxes(),
-          const SizedBox(height: 24),
+          if (_outletHasProducts == true) ...[
+            const Text(
+              'Knauf products available / Bidhaa zilizopo',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 12),
+            _buildProductCheckboxes(),
+            const SizedBox(height: 24),
+          ],
           _buildTextField(
             label: 'Challenges stocking Knauf products? / Changamoto',
             controller: _challengesController,
